@@ -11,3 +11,4 @@ A very simple router (for now) for PHP Web applications.
 * Route grouping.
 * Handling of before/after.
 * Testing.
+* Custom exceptions and error handling.
