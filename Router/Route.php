@@ -2,26 +2,66 @@
 namespace Router;
 
 class Route {
-    
-    private $method = null;
-    private $endpoint = null;
-    private $endpointNormalized = null;
+
+    /**
+     * @var string
+     */
+    private $method;
+
+    /**
+     * @var string
+     */
+    private $endpoint;
+
+    /**
+     * @var string
+     */
+    private $endpointNormalized;
+
+    /**
+     * Endpoint parts, with placeholders replaced
+     * @var array
+     */
     private $endpointPartsNormalized = [];
+
+    /**
+     * Placeholders in route
+     * @var array
+     */
     private $placeHolders = [];
+
+    /**
+     * Placeholder positions in endpoint parts
+     * @var array
+     */
     private $placeHolderPositions = [];
-    private $action = null;
-    
-    
+
+    /**
+     * Function to be called if route is matched
+     * @var callable
+     */
+    private $action;
+
+
+    /**
+     * @return string
+     */
     public function getMethod()
     {
         return $this->method;
     }
-    
+
+    /**
+     * @param $method string
+     */
     public function setMethod($method)
     {
         $this->method = $method;
     }
-    
+
+    /**
+     * @param $endpoint
+     */
     public function setEndpoint($endpoint)
     {
         $this->normalize($endpoint);
@@ -29,41 +69,36 @@ class Route {
         // $this->endpointNormalized = $this->normalizeEndpoint($endpoint);
         $this->endpoint = $endpoint;
     }
-    
+
+    /**
+     * @return string
+     */
     public function getNormalizedEndpoint()
     {
         return $this->endpointNormalized;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getNormalizedEndpointParts()
     {
         return $this->endpointPartsNormalized;
     }
-    
-    public function getHierarchy()
-    {
-        $hierarchy = [];
-        $parts = array_reverse(explode("/",$this->endpointNormalized));
-        $prev = null;
-        foreach($parts as $k => $part) {
-            
-            if($k == 0) {
-                $hierarchy[$part] = $this->endpointNormalized;
-                continue;
-            }
-            
-            $hierarchy = [$part=>$hierarchy];
-            
-        }
-        
-        return $hierarchy;
-    }
-    
+
+    /**
+     * @param $action
+     */
     public function setAction($action)
     {
         $this->action = $action;
     }
-    
+
+    /**
+     * Call the function for route.
+     * @param $requestParts
+     * @return mixed
+     */
     public function call($requestParts)
     {
         $placeHolderValues = $this->parsePlaceholderValues($requestParts);
@@ -71,7 +106,12 @@ class Route {
         return call_user_func_array($this->action,$placeHolderValues);
         // return ($this->action)($requestParts);
     }
-    
+
+    /**
+     * Replaces placeholder variables with ones in request
+     * @param $requestParts
+     * @return array
+     */
     private function parsePlaceholderValues($requestParts)
     {
         $values = [];
@@ -81,10 +121,11 @@ class Route {
         
         return $values;
     }
-    
-    /*
+
+    /**
      * Extracts all placeholders.
      * Normalizes endpoint by replacing placeholders with static value
+     * @param $endpoint string
      */
     private function normalize($endpoint)
     {
@@ -120,5 +161,5 @@ class Route {
         $this->placeHolderPositions = $placeHolderPositions;
         
     }
-    
+
 }
