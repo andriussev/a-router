@@ -1,0 +1,23 @@
+{
+    "name": "andriussev/a-router",
+    "description": "A very simple WEB router",
+    "license": "MIT",
+    "version": "dev-master",
+    "authors": [
+        {
+            "name": "Andrius Sevcenko"
+        }
+    ],
+    "type": "project",
+    "require": {
+		"php": ">=5.4"
+    },
+	"require-dev": {
+		"phpunit/phpunit": "5.2.*"
+    },
+	"autoload": {
+        "psr-4": {
+            "Andriussev\\ARouter\\": "src/"
+        }
+    }
+}

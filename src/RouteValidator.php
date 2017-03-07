@@ -1,10 +1,8 @@
-<?php
-namespace Router;
+<?php namespace Andriussev\ARouter;
 
 class RouteValidator {
     
-    private $allowedMethods = ['GET'];
-
+    private $allowedMethods = ['GET','POST'];
     /**
      * Check if the HTTP method is allowed
      * @param $method string
@@ -14,7 +12,6 @@ class RouteValidator {
     {
         return in_array($method,$this->allowedMethods);
     }
-
     /**
      * Check if endpoint is valid
      * @param $endpoint
@@ -24,7 +21,6 @@ class RouteValidator {
     {
         return true;
     }
-
     /**
      * Check if action is valid
      * @param $action
@@ -34,5 +30,4 @@ class RouteValidator {
     {
         return !is_callable($action);
     }
-
 }
