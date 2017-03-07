@@ -2,10 +2,9 @@
 			colors="true"
 			convertErrorsToExceptions="true"
 			convertNoticesToExceptions="true"
-			convertWarningsToExceptions="true"
-			stopOnFailure="true">
+			convertWarningsToExceptions="true">
 			<testsuites>
-				<testsuite name="Unit Tests">
+				<testsuite name="Tests">
 					<directory>tests</directory>
 				</testsuite>
 			</testsuites>

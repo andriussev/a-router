@@ -78,9 +78,22 @@ class Router {
     }
 
     /**
+     * @param bool $simplify If true, only returns the route url, without the object
      * @return array
      */
-    public function getMap() {
+    public function getMap($simplify = false) {
+        if($simplify) {
+            $simplified = [];
+            /** @var Route $route */
+            foreach($this->map as $method => $methodGroupElements) {
+
+                $simplified[$method] = [];
+                foreach($methodGroupElements as $route) {
+                    $simplified[$method][] = $route->getEndpointNormalized();
+                }
+            }
+            return $simplified;
+        }
         return $this->map;
     }
 
@@ -100,27 +113,42 @@ class Router {
 
         $requestUrl = rtrim($requestUrl,'/');
 
-        var_dump('Finding route: ' . $requestUrl);
-
         if (!array_key_exists($requestMethod, $this->map)) {
             throw new \Exception('Route not found');
         }
 
         /** @var Route $routeObj */
         foreach ($this->map[$requestMethod] as $routeObj) {
+
             $matches = null;
-            preg_match('/' . $routeObj->getEndpointNormalized() . '/i', $requestUrl, $matches);
+            if($requestUrl == str_replace('\/','/',$routeObj->getEndpointNormalized())) {
+                return $this->createMatchedRoute($requestUrl, $routeObj, []);
+            }
+
+            preg_match('/' . $routeObj->getEndpointNormalized() . '$/i', $requestUrl, $matches);
             if (count($matches) > 1) {
                 array_shift($matches);
-                $matchedRoute = new MatchedRoute();
-                $matchedRoute->setRoute($routeObj);
-                $matchedRoute->setRequestedUrl($requestUrl);
-                $matchedRoute->setMatchedPlaceholdersValues($matches);
-                return $matchedRoute;
+
+                return $this->createMatchedRoute($requestUrl, $routeObj, $matches);
             }
         }
 
         throw new \Exception('Route not found');
+    }
+
+    /**
+     * @param $requestUrl
+     * @param $routeObj
+     * @param $matches
+     * @return MatchedRoute
+     */
+    private function createMatchedRoute($requestUrl, $routeObj, $matches) {
+        $matchedRoute = new MatchedRoute();
+        $matchedRoute->setRoute($routeObj);
+        $matchedRoute->setRequestedUrl($requestUrl);
+        $matchedRoute->setMatchedPlaceholdersValues($matches);
+
+        return $matchedRoute;
     }
 
     /**
