@@ -4,13 +4,14 @@ class Router {
 
     private $routeValidator;
 
+    private $routeList = [];
     private $map = [];
 
     private $requestMethod = null;
     private $requestUrl = null;
 
     public function __construct() {
-        $this->routeValidator = new RouteValidator();
+        $this->routeValidator = new Validator();
     }
 
     /**
@@ -20,6 +21,7 @@ class Router {
      */
     public function start($forceMethod = null, $forceUri = null) {
         $this->beforeStart();
+        $this->mapRoutes();
         $matchedRoute = $this->findRoute($forceMethod, $forceUri);
         $this->resolveMatchedRoute($matchedRoute);
         $this->afterStart();
@@ -63,10 +65,28 @@ class Router {
         $route->setEndpoint($endpoint);
         $route->setAction($action);
         // Add newly created route to array
-        $this->addRouteToMap($route);
+        $this->routeList[] = $route;
+        //$this->addRouteToMap($route);
 
         // Return route for further chaining
         return $route;
+    }
+    
+    public function addGroup($endpoint) {
+        $group = new Group();
+        $group->setEndpoint($endpoint);
+        return $group;
+    }
+    
+    private function mapRoutes() {
+        $this->clearRoutesMap();
+        foreach($this->routeList as $route) {
+            $this->addRouteToMap($route);
+        }
+    }
+    
+    private function clearRoutesMap() {
+        $this->map = [];
     }
 
     private function addRouteToMap(Route $route) {
@@ -82,6 +102,8 @@ class Router {
      * @return array
      */
     public function getMap($simplify = false) {
+        $this->clearRoutesMap();
+        $this->mapRoutes();
         if($simplify) {
             $simplified = [];
             /** @var Route $route */
@@ -108,7 +130,7 @@ class Router {
             $requestMethod = $_SERVER['REQUEST_METHOD'];
         }
         if ($requestUrl === null) {
-            $requestUrl = $_SERVER['REDIRECT_URL'];
+            $requestUrl = strtok($_SERVER["REQUEST_URI"],'?');
         }
 
         $requestUrl = rtrim($requestUrl,'/');

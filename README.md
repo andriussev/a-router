@@ -51,6 +51,40 @@ $router->addRoute('GET','/books/:id',function($id) {
 }); 
 ````
 
+### Route grouping
+
+Routes can be grouped so that there is no need to rewrite the same base endpoint part all the time.
+Currently, there is no group nesting.
+
+```` 
+$books = $router->addGroup('/books');
+
+$router->addRoute('GET','/:id',function($id) {
+    echo ("GET /books/".$id);
+})->addGroup($books); 
+````
+
+The route is now equivalent to this route:  ````/books/:id````.
+
+It is also possible to add placeholders to route groups:
+
+```` 
+$booksSingle = $router->addGroup('/books/:id');
+
+$router->addRoute('GET','/edit',function($id) {
+    echo ("GET /books/".$id."/edit");
+})->addGroup($booksSingle); 
+
+$router->addRoute('GET','/delete',function($id) {
+    echo ("GET /books/".$id."/delete");
+})->addGroup($booksSingle); 
+````
+
+When building the map of routes, the group endpoint just becomes part of the route endpoint.
+This means that matching will behave as expected (according to the **Sequencing** part, below).
+
+
+
 ### Gotchas
 
 #### Sequencing
@@ -90,8 +124,14 @@ The first route with $id='new' will always trigger first.
 * ~~Update to a composer package~~.
 * ~~More in-depth documentation~~.
 * Route naming.
-* Route grouping.
+* ~~Route grouping~~.
+* Route group nesting.
 * Handling of before/after.
 * ~~Testing~~.
 * Custom exceptions and error handling.
 * Helper object/methods to build URLs in application.
+
+
+# Ideas, considerations
+
+* It might be a better option to _inject_ the MatchedRoute object into the callback function instead of the direct variables.

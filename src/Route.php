@@ -28,6 +28,8 @@ class Route {
      * @var array
      */
     private $placeHolders = [];
+    
+    private $group;
 
 
     /**
@@ -49,11 +51,20 @@ class Route {
      */
     public function setEndpoint($endpoint) {
         $this->endpoint = $endpoint;
-        $this->generateNormalizedEndpoint();
+        //$this->generateNormalizedEndpoint();
     }
 
     private function generateNormalizedEndpoint() {
-        $endpointParts = explode('/', $this->endpoint);
+        $finalEndpoint = $this->endpoint;
+        
+        // If the route has a group, prepend the group url first
+        if($this->group) {
+            $groupEndpoint = $this->group->getEndpoint();
+            $groupEndpoint = rtrim($groupEndpoint,'/');
+            $finalEndpoint = $groupEndpoint . $finalEndpoint;
+        }
+        
+        $endpointParts = explode('/', $finalEndpoint);
         $endpointOut = '';
         foreach ($endpointParts as $part) {
             // Skip a possible first and last empty parts
@@ -75,9 +86,16 @@ class Route {
     }
 
     /**
+     * Gets the normalized
      * @return string
      */
     public function getEndpointNormalized() {
+        if($this->endpointNormalized) {
+            return $this->endpointNormalized;
+        }
+        
+        $this->generateNormalizedEndpoint();
+        
         return $this->endpointNormalized;
     }
 
@@ -111,5 +129,9 @@ class Route {
         return call_user_func_array($this->action,$placeholderValues);
     }
 
+    public function setGroup(Group $group) {
+        $this->group = $group;
+        return $this;
+    }
 
 }

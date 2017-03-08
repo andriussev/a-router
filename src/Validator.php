@@ -1,6 +1,6 @@
 <?php namespace Andriussev\ARouter;
 
-class RouteValidator {
+class Validator {
     
     private $allowedMethods = ['GET','POST'];
     /**
