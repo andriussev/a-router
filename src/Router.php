@@ -1,17 +1,22 @@
 <?php namespace Andriussev\ARouter;
 
 class Router {
+    
+    private $normalizeNamedBeforeFindingRoute = false;
+    private $isStarted = false;
 
     private $routeValidator;
 
     private $routeList = [];
     private $map = [];
+    private $mapByName = [];
 
     private $requestMethod = null;
     private $requestUrl = null;
 
     public function __construct() {
         $this->routeValidator = new Validator();
+        Helper::setRouter($this);
     }
 
     /**
@@ -22,9 +27,18 @@ class Router {
     public function start($forceMethod = null, $forceUri = null) {
         $this->beforeStart();
         $this->mapRoutes();
+        $this->isStarted = true;
+        if($this->normalizeNamedBeforeFindingRoute) {
+            $this->normalizeNamedRoutes();
+        }
         $matchedRoute = $this->findRoute($forceMethod, $forceUri);
+        Helper::setMatchedRoute($matchedRoute);
         $this->resolveMatchedRoute($matchedRoute);
         $this->afterStart();
+    }
+    
+    public function isStarted() {
+        return $this->isStarted();
     }
 
     /**
@@ -78,6 +92,10 @@ class Router {
         return $group;
     }
     
+    public function normalizeNamedBeforeFindingRoute() {
+        $this->normalizeNamedBeforeFindingRoute = true;
+    }
+    
     private function mapRoutes() {
         $this->clearRoutesMap();
         foreach($this->routeList as $route) {
@@ -87,6 +105,7 @@ class Router {
     
     private function clearRoutesMap() {
         $this->map = [];
+        $this->mapByName = [];
     }
 
     private function addRouteToMap(Route $route) {
@@ -95,6 +114,10 @@ class Router {
         }
 
         $this->map[$route->getMethod()][] = $route;
+        
+        if($route->getName() !== null) {
+            $this->mapByName[$route->getName()] = $route;
+        }
     }
 
     /**
@@ -117,6 +140,20 @@ class Router {
             return $simplified;
         }
         return $this->map;
+    }
+    
+    /**
+     * Returns all named routes
+     * @return array 
+     */
+    public function getMapByName() {
+        return $this->mapByName;
+    }
+    
+    private function normalizeNamedRoutes() {
+        foreach($this->mapByName as $route) {
+            $route->getEndpointNormalized();
+        }
     }
 
     /**

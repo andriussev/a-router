@@ -47,9 +47,29 @@ class MatchedRoute {
         $this->matchedPlaceholdersValues = $matchedPlaceholdersValues;
     }
 
+    /**
+     * Sets placeholder keys with values.
+     * Calls the route callback function to resolve the route.
+     */
     public function resolve() {
         $this->matchedPlaceholders = array_combine($this->route->getPlaceHolders(),$this->matchedPlaceholdersValues);
         $this->route->call($this->matchedPlaceholders);
+    }
+    
+    /**
+     * Returns an array of matched route keys and values
+     * @return array
+     */
+    public function getMatchedPlaceholders() {
+        return $this->matchedPlaceholders;
+    }
+        
+    /**
+     * Returns an array of matched route keys and values
+     * @return array
+     */
+    public function values() {
+        return $this->getMatchedPlaceholders();
     }
 
 

@@ -51,6 +51,17 @@ $router->addRoute('GET','/books/:id',function($id) {
 }); 
 ````
 
+### Route naming
+
+Routes can be named to later be used for URL generation.
+
+Example:
+```` 
+$router->addRoute('GET','/books/:id',function($id) {
+    echo ("GET /books/".$id);
+})->setName('singleBook'); 
+````
+
 ### Route grouping
 
 Routes can be grouped so that there is no need to rewrite the same base endpoint part all the time.
@@ -83,6 +94,53 @@ $router->addRoute('GET','/delete',function($id) {
 When building the map of routes, the group endpoint just becomes part of the route endpoint.
 This means that matching will behave as expected (according to the **Sequencing** part, below).
 
+### Helper
+
+The helper class provides additional functionality.
+All methods are statically called on the class.
+
+#### Get current request values
+
+````
+// Current URL: /books/123 (matched from /books/:id)
+$values = \Andriussev\ARouter\Helper::getRequestValues();
+// Outputs: ['id'=>123]
+````
+
+#### Generating a URL
+
+URLs can be generated dynamically if the route has been named.
+
+To use this functionality, all route URLs must be generated even though the route was not matched.
+To force generation of all routes before finding the route, use this:
+
+````
+$router->normalizeNamedBeforeFindingRoute();
+````
+
+Example of setting up the routes:
+
+```` 
+$router->addRoute('GET','/books',callback)->setName('allBooks');
+$router->addRoute('GET','/books/:id',callback)->setName('singleBook'); 
+````
+
+In the callback functions you can now generate URLs to routes:
+
+```` 
+// A simple route with no placeholders
+$linkAll = Andriussev\ARouter\Helper::getUrlToRoute('allBooks');
+// Returns a string: '/books'
+````
+
+For routes with placeholders, you will need to add an additional argument to the function with an array of values:
+The keys in the array must match the placeholders:
+
+```` 
+// A simple route with no placeholders
+$linkAll = Andriussev\ARouter\Helper::getUrlToRoute('singleBook',['id'=>12]);
+// Returns a string: '/books/12'
+````
 
 
 ### Gotchas
@@ -123,13 +181,13 @@ The first route with $id='new' will always trigger first.
 
 * ~~Update to a composer package~~.
 * ~~More in-depth documentation~~.
-* Route naming.
+* ~~Route naming~~.
 * ~~Route grouping~~.
 * Route group nesting.
 * Handling of before/after.
 * ~~Testing~~.
 * Custom exceptions and error handling.
-* Helper object/methods to build URLs in application.
+* ~~Helper object/methods to build URLs in application~~.
 
 
 # Ideas, considerations
