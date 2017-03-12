@@ -1,5 +1,7 @@
 <?php namespace Andriussev\ARouter;
 
+use Andriussev\ARouter\Exception\NamedRouteNotFoundException;
+
 class Helper {
     
     /**
@@ -10,7 +12,7 @@ class Helper {
     
     /**
      * MatchedRouter object for the request
-     * @var MatchedRouter
+     * @var MatchedRoute
      */
     private static $matchedRoute;
     
@@ -25,14 +27,18 @@ class Helper {
     public static function setRouter(Router $router) {
         self::$router = $router;
     }
-    
+
     /**
      * Parses the route url by a given route name
+     * @param string $routeName Input route name for an existing named route
+     * @param array $routeValues Values for placeholders
+     * @return
+     * @throws NamedRouteNotFoundException
      */
     public static function getUrlToRoute($routeName, $routeValues = []) {
         $routes = self::$router->getMapByName();
         if(!array_key_exists($routeName,$routes)) {
-            throw new \Exception('Route with a name \' . $routeName . \' not found');
+            throw new NamedRouteNotFoundException('Route with a name \'' . $routeName . '\' not found');
         }
         
         return $routes[$routeName]->generateUrl($routeValues);

@@ -4,10 +4,7 @@ use Andriussev\ARouter\Helper;
 use PHPUnit\Framework\TestCase;
 
 class NamesRoutesTest extends TestCase {
-    
-    /**
-     * Functionality of grouping routes
-     */
+
     public function testNamedRoutes() {
         
         $router =  new Router();

@@ -1,5 +1,7 @@
 <?php namespace Andriussev\ARouter;
 
+use Andriussev\ARouter\Exception\URLGenerationInvalidException;
+
 class Route {
 
     /**
@@ -163,12 +165,17 @@ class Route {
     public function call($placeholderValues) {
         return call_user_func_array($this->action,$placeholderValues);
     }
-    
+
+    /**
+     * @param $values
+     * @return mixed|string
+     * @throws URLGenerationInvalidException
+     */
     public function generateUrl($values) {
         // Differences in arrays between placeholders and provided values
         $differences = array_diff($this->placeholders,array_keys($values));
         if(!empty($differences)) {
-            throw new \Exception('Missing values to generate a URL: ' . implode(',',$differences));
+            throw new URLGenerationInvalidException('Missing values to generate a URL because placeholder values are missing: ' . implode(',',$differences));
         }
         
         $outputUrl = $this->endpointGenerated;

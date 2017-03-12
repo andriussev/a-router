@@ -2,7 +2,7 @@
 
 class Validator {
     
-    private $allowedMethods = ['GET','POST'];
+    private $allowedMethods = ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'CONNECT', 'OPTIONS', 'PATCH'];
     /**
      * Check if the HTTP method is allowed
      * @param $method string

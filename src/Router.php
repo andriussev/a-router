@@ -1,7 +1,11 @@
 <?php namespace Andriussev\ARouter;
 
+use Andriussev\ARouter\Exception\EndpointInvalidException;
+use Andriussev\ARouter\Exception\MethodInvalidException;
+use Andriussev\ARouter\Exception\RouteNotFoundException;
+
 class Router {
-    
+
     private $normalizeNamedBeforeFindingRoute = false;
     private $isStarted = false;
 
@@ -28,7 +32,7 @@ class Router {
         $this->beforeStart();
         $this->mapRoutes();
         $this->isStarted = true;
-        if($this->normalizeNamedBeforeFindingRoute) {
+        if ($this->normalizeNamedBeforeFindingRoute) {
             $this->normalizeNamedRoutes();
         }
         $matchedRoute = $this->findRoute($forceMethod, $forceUri);
@@ -36,7 +40,7 @@ class Router {
         $this->resolveMatchedRoute($matchedRoute);
         $this->afterStart();
     }
-    
+
     public function isStarted() {
         return $this->isStarted();
     }
@@ -61,17 +65,18 @@ class Router {
      * @param $endpoint string URL endpoint
      * @param $action   callable Function to call if route is matched
      * @return Route
-     * @throws \Exception
+     * @throws EndpointInvalidException
+     * @throws MethodInvalidException
      */
     public function addRoute($method, $endpoint, $action) {
         $method = strtoupper($method);
         // Validate if method allowed
         if (!$this->routeValidator->isValidMethod($method)) {
-            throw new \Exception('Method not allowed');
+            throw new MethodInvalidException('Method \'' . $method . '\' is not valid');
         }
         // Validate if endpoint is valid
         if (!$this->routeValidator->isValidEndpoint($endpoint)) {
-            throw new \Exception('Endpoint is not valid');
+            throw new EndpointInvalidException('Endpoint \'' . $endpoint . '\' is not valid');
         }
         // Create a new route object
         $route = new Route();
@@ -85,24 +90,25 @@ class Router {
         // Return route for further chaining
         return $route;
     }
-    
+
     public function addGroup($endpoint) {
         $group = new Group();
         $group->setEndpoint($endpoint);
+
         return $group;
     }
-    
+
     public function normalizeNamedBeforeFindingRoute() {
         $this->normalizeNamedBeforeFindingRoute = true;
     }
-    
+
     private function mapRoutes() {
         $this->clearRoutesMap();
-        foreach($this->routeList as $route) {
+        foreach ($this->routeList as $route) {
             $this->addRouteToMap($route);
         }
     }
-    
+
     private function clearRoutesMap() {
         $this->map = [];
         $this->mapByName = [];
@@ -114,8 +120,8 @@ class Router {
         }
 
         $this->map[$route->getMethod()][] = $route;
-        
-        if($route->getName() !== null) {
+
+        if ($route->getName() !== null) {
             $this->mapByName[$route->getName()] = $route;
         }
     }
@@ -127,31 +133,33 @@ class Router {
     public function getMap($simplify = false) {
         $this->clearRoutesMap();
         $this->mapRoutes();
-        if($simplify) {
+        if ($simplify) {
             $simplified = [];
             /** @var Route $route */
-            foreach($this->map as $method => $methodGroupElements) {
+            foreach ($this->map as $method => $methodGroupElements) {
 
                 $simplified[$method] = [];
-                foreach($methodGroupElements as $route) {
+                foreach ($methodGroupElements as $route) {
                     $simplified[$method][] = $route->getEndpointNormalized();
                 }
             }
+
             return $simplified;
         }
+
         return $this->map;
     }
-    
+
     /**
      * Returns all named routes
-     * @return array 
+     * @return array
      */
     public function getMapByName() {
         return $this->mapByName;
     }
-    
+
     private function normalizeNamedRoutes() {
-        foreach($this->mapByName as $route) {
+        foreach ($this->mapByName as $route) {
             $route->getEndpointNormalized();
         }
     }
@@ -160,27 +168,27 @@ class Router {
      * @param $requestMethod
      * @param $requestUrl
      * @return MatchedRoute
-     * @throws \Exception
+     * @throws RouteNotFoundException
      */
     private function findRoute($requestMethod, $requestUrl) {
         if ($requestMethod === null) {
             $requestMethod = $_SERVER['REQUEST_METHOD'];
         }
         if ($requestUrl === null) {
-            $requestUrl = strtok($_SERVER["REQUEST_URI"],'?');
+            $requestUrl = strtok($_SERVER["REQUEST_URI"], '?');
         }
 
-        $requestUrl = rtrim($requestUrl,'/');
+        $requestUrl = rtrim($requestUrl, '/');
 
         if (!array_key_exists($requestMethod, $this->map)) {
-            throw new \Exception('Route not found');
+            throw new RouteNotFoundException('Route not found for method \'' . $requestMethod . '\' URL \'' . $requestUrl . '\'');
         }
 
         /** @var Route $routeObj */
         foreach ($this->map[$requestMethod] as $routeObj) {
 
             $matches = null;
-            if($requestUrl == str_replace('\/','/',$routeObj->getEndpointNormalized())) {
+            if ($requestUrl == str_replace('\/', '/', $routeObj->getEndpointNormalized())) {
                 return $this->createMatchedRoute($requestUrl, $routeObj, []);
             }
 
@@ -192,7 +200,7 @@ class Router {
             }
         }
 
-        throw new \Exception('Route not found');
+        throw new RouteNotFoundException('Route not found for method \'' . $requestMethod . '\' URL \'' . $requestUrl . '\'');
     }
 
     /**
