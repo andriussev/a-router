@@ -1,6 +1,7 @@
 <?php
 use Andriussev\ARouter\Exception\MethodInvalidException;
 use Andriussev\ARouter\Exception\NamedRouteNotFoundException;
+use Andriussev\ARouter\Exception\NotFoundHandlerInvalidException;
 use Andriussev\ARouter\Exception\RouteNotFoundException;
 use Andriussev\ARouter\Exception\URLGenerationInvalidException;
 use Andriussev\ARouter\Helper;
@@ -50,7 +51,6 @@ class ExceptionsTest extends TestCase {
     }
 
     public function testURLGenerationInvalid() {
-
         $this->expectException(URLGenerationInvalidException::class);
 
         $router = new Router();
@@ -65,5 +65,13 @@ class ExceptionsTest extends TestCase {
         $out = ob_get_contents();
 
         Helper::getUrlToRoute('singleBook');
+    }
+
+    public function testNotFoundHandlerInvalid() {
+        $this->expectException(NotFoundHandlerInvalidException::class);
+
+        $router = new Router();
+        $router->setNotFoundHandler('test');
+
     }
 }

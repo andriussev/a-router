@@ -2,6 +2,7 @@
 
 use Andriussev\ARouter\Exception\EndpointInvalidException;
 use Andriussev\ARouter\Exception\MethodInvalidException;
+use Andriussev\ARouter\Exception\NotFoundHandlerInvalidException;
 use Andriussev\ARouter\Exception\RouteNotFoundException;
 
 class Router {
@@ -14,6 +15,8 @@ class Router {
     private $routeList = [];
     private $map = [];
     private $mapByName = [];
+
+    private $notFoundHandler;
 
     private $requestMethod = null;
     private $requestUrl = null;
@@ -36,6 +39,9 @@ class Router {
             $this->normalizeNamedRoutes();
         }
         $matchedRoute = $this->findRoute($forceMethod, $forceUri);
+        if(!$matchedRoute) {
+            return;
+        }
         Helper::setMatchedRoute($matchedRoute);
         $this->resolveMatchedRoute($matchedRoute);
         $this->afterStart();
@@ -100,6 +106,13 @@ class Router {
 
     public function normalizeNamedBeforeFindingRoute() {
         $this->normalizeNamedBeforeFindingRoute = true;
+    }
+
+    public function setNotFoundHandler($action) {
+        if(!is_callable($action)) {
+            throw new NotFoundHandlerInvalidException('Provided not-found handler is not a callable function');
+        }
+        $this->notFoundHandler = $action;
     }
 
     private function mapRoutes() {
@@ -181,7 +194,7 @@ class Router {
         $requestUrl = rtrim($requestUrl, '/');
 
         if (!array_key_exists($requestMethod, $this->map)) {
-            throw new RouteNotFoundException('Route not found for method \'' . $requestMethod . '\' URL \'' . $requestUrl . '\'');
+            $this->routeNotFound($requestMethod, $requestUrl);
         }
 
         /** @var Route $routeObj */
@@ -200,7 +213,7 @@ class Router {
             }
         }
 
-        throw new RouteNotFoundException('Route not found for method \'' . $requestMethod . '\' URL \'' . $requestUrl . '\'');
+        $this->routeNotFound($requestMethod, $requestUrl);
     }
 
     /**
@@ -224,5 +237,18 @@ class Router {
      */
     private function resolveMatchedRoute(MatchedRoute $matchedRoute) {
         $matchedRoute->resolve();
+    }
+
+    /**
+     * @param $requestMethod
+     * @param $requestUrl
+     * @return mixed
+     * @throws RouteNotFoundException
+     */
+    private function routeNotFound($requestMethod, $requestUrl) {
+        if($this->notFoundHandler) {
+            return call_user_func_array($this->notFoundHandler,[$requestMethod,$requestUrl]);
+        }
+        throw new RouteNotFoundException('Route not found for method \'' . $requestMethod . '\' URL \'' . $requestUrl . '\'');
     }
 }

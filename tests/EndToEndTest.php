@@ -289,4 +289,23 @@ class EndToEndTest extends TestCase {
         $this->assertEquals('GET /books/id:1/save', $out);
 
     }
+
+    public function testCustomNotFoundHandler() {
+
+        $router = new Router();
+
+        $router->setNotFoundHandler(function($method, $url) {
+            echo 'Not found: ' . $method . ' ' . $url;
+        });
+
+        $router->addRoute('GET','/',function() {
+            echo ("GET /");
+        });
+
+        ob_start();
+        $router->start('GET', '/not-found');
+        $out = ob_get_contents();
+        $this->assertEquals('Not found: GET /not-found', $out);
+
+    }
 }
