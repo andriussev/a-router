@@ -143,6 +143,21 @@ $linkAll = Andriussev\ARouter\Helper::getUrlToRoute('singleBook',['id'=>12]);
 ````
 
 
+### Custom handlers
+
+#### Route-not-found handler
+
+A route-not-found exception can be caught on the ````start()```` (RouteNotFoundException).
+
+Otherwise, a custom route-not-found handler can be defined:
+
+````
+$router->setNotFoundHandler(function($method, $uri) {
+    echo 'Page not found: ' . $uri;
+});
+````
+
+
 ### Gotchas
 
 #### Sequencing
@@ -186,7 +201,7 @@ The first route with $id='new' will always trigger first.
 * Route group nesting.
 * Handling of before/after.
 * ~~Testing~~.
-* Custom exceptions and error handling.
+* ~~Custom exceptions and error handling.~~
 * ~~Helper object/methods to build URLs in application~~.
 
 
